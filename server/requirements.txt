@@ -1,0 +1,10 @@
+# Core OpenEnv runtime
+openenv-core[core]>=0.2.0
+
+# Inference
+openai>=1.0.0
+
+# Security-pinned dependencies (CVE fixes)
+fastmcp>=3.2.0            # Fixes CVE-2026-32871 (SSRF/Path Traversal, CVSS 10.0)
+gradio>=6.11.0             # Fixes multiple high-severity CVEs
+setuptools>=82.0.1         # Fixes CVE-2025-47273 (CVSS 7.7)
