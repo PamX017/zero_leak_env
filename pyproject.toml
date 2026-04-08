@@ -15,7 +15,7 @@ description = "Zero-Leak Engineering Assistant — a security-focused RL environ
 requires-python = ">=3.10"
 dependencies = [
     # Core OpenEnv runtime (provides FastAPI server + HTTP client types)
-    "openenv-core[core]>=0.2.0",
+    "openenv-core[core]>=0.2.2",
     # Inference script dependency
     "openai>=1.0.0",
     # Server
