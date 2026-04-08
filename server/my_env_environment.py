@@ -23,7 +23,10 @@ from uuid import uuid4
 from openenv.core.env_server.interfaces import Environment
 from openenv.core.env_server.types import State
 
-from models import ZeroLeakAction, ZeroLeakObservation
+try:
+    from models import ZeroLeakAction, ZeroLeakObservation
+except ImportError:
+    from my_env.models import ZeroLeakAction, ZeroLeakObservation  # type: ignore[no-redef]
 from .grader import grade, clamp
 
 
