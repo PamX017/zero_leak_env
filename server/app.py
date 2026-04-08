@@ -31,7 +31,10 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 # Import from local models.py (PYTHONPATH includes /app/env in Docker)
-from models import ZeroLeakAction, ZeroLeakObservation
+try:
+    from ..models import ZeroLeakAction, ZeroLeakObservation
+except (ImportError, ValueError):
+    from models import ZeroLeakAction, ZeroLeakObservation
 from .my_env_environment import ZeroLeakEnvironment
 
 

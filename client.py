@@ -14,7 +14,7 @@ from openenv.core import EnvClient
 
 try:
     from .models import ZeroLeakAction, ZeroLeakObservation
-except ImportError:
+except (ImportError, ValueError):
     from models import ZeroLeakAction, ZeroLeakObservation  # type: ignore[no-redef]
 
 
