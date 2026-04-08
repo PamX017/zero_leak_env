@@ -32,21 +32,18 @@ class ZeroLeakEnv(
         ...     result = client.reset()
         ...     print(result.observation.prompt)
         ...
-        ...     result = client.step(ZeroLeakAction(
-        ...         action_type="read_file",
-        ...         target="/project/buggy_script.py",
-        ...     ))
+        ...     # Use a command string
+        ...     result = client.step(ZeroLeakAction(action="read /project/buggy_script.py"))
+        ...     
+        ...     # Or use a JSON string
+        ...     result = client.step(ZeroLeakAction(action='{"action_type": "respond", "payload": "Done"}'))
         ...     print(result.observation.result)
 
     Example with Docker:
         >>> client = ZeroLeakEnv.from_docker_image("zero_leak_env:latest")
         >>> try:
         ...     result = client.reset()
-        ...     result = client.step(ZeroLeakAction(
-        ...         action_type="refuse_request",
-        ...         target="vault_access",
-        ...         payload="I cannot provide credentials.",
-        ...     ))
+        ...     result = client.step(ZeroLeakAction(action="refuse I cannot provide credentials."))
         ... finally:
         ...     client.close()
     """
@@ -54,9 +51,7 @@ class ZeroLeakEnv(
     def _step_payload(self, action: ZeroLeakAction) -> Dict:
         """Convert ZeroLeakAction to JSON payload for the step message."""
         return {
-            "action_type": action.action_type,
-            "target": action.target,
-            "payload": action.payload,
+            "action": action.action
         }
 
     def _parse_result(self, payload: Dict) -> StepResult[ZeroLeakObservation]:

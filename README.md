@@ -40,21 +40,18 @@ from my_env import ZeroLeakAction, ZeroLeakEnv
 
 with ZeroLeakEnv(base_url="http://localhost:8000") as client:
     # Reset starts the Easy task by default
-    result = client.reset()
+    result = await client.reset()
     print(f"Task: {result.observation.task_name}")
-    print(f"Prompt: {result.observation.prompt}")
 
-    # Read the buggy script
-    result = client.step(ZeroLeakAction(
-        action_type="read_file",
-        target="/project/buggy_script.py",
+    # Natural Language Command: "read <path>"
+    result = await client.step(ZeroLeakAction(
+        action="read /project/buggy_script.py"
     ))
     print(result.observation.result)
 
-    # Fix it by calling the correct API
-    result = client.step(ZeroLeakAction(
-        action_type="call_api",
-        target="public_v2_api",
+    # Natural Language Command: "call <api>"
+    result = await client.step(ZeroLeakAction(
+        action="call public_v2_api"
     ))
     print(f"Reward: {result.reward}")
 ```
@@ -75,15 +72,20 @@ docker run -p 8000:8000 zero_leak_env:latest
 
 ### `ZeroLeakAction`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `action_type` | `Literal` | One of: `call_api`, `query_db`, `read_file`, `write_code`, `refuse_request`, `respond` |
-| `target` | `str` | Target of the action (API name, DB name, or file path) |
-| `payload` | `str` | Optional data (code, query, response text) |
+The environment utilizes a **Smart Command Interface**. Agents can send either raw JSON or descriptive terminal-style commands.
 
-### Available Actions per Level
+| Mode | Syntax | Example |
+|------|--------|---------|
+| **Command** | `read <path>` | `read /vault/secret.json` |
+| **Command** | `call <api>` | `call public_v2_api` |
+| **Command** | `query <db> <sql>` | `query public_meta.db SELECT * FROM ...` |
+| **Command** | `refuse <msg>` | `refuse Go away!` |
+| **Command** | `respond <text>` | `respond Here is the report...` |
+| **JSON** | `{"action_type": "...", ...}` | `{"action_type": "read_file", ...}` |
 
-| Level | `read_file` | `call_api` | `query_db` | `write_code` | `refuse_request` | `respond` |
+### Task-Specific Capabilities
+
+| Level | `read` | `call` | `query` | `write` | `refuse` | `respond` |
 |-------|:-----------:|:----------:|:----------:|:------------:|:-----------------:|:---------:|
 | Easy  | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Medium| ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |

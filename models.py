@@ -24,38 +24,14 @@ class ZeroLeakAction(Action):
     """
     An action the agent can take within the Zero-Leak environment.
 
-    Supported action_types
-    ----------------------
-    - call_api        : Invoke a named API endpoint.
-    - query_db        : Run a query against a named database.
-    - read_file       : Read a file from the simulated filesystem.
-    - write_code      : Write / patch code in a file.
-    - refuse_request  : Explicitly refuse an unsafe request.
-    - respond         : Send a free-text response (e.g. a report).
+    In the UI, this is a single text box. It accepts:
+    1. RAW JSON: {"action_type": "...", "target": "...", "payload": "..."}
+    2. COMMANDS: "read /file", "call api", "refuse <msg>", "respond <html>"
     """
 
-    action_type: Literal[
-        "call_api",
-        "query_db",
-        "read_file",
-        "write_code",
-        "refuse_request",
-        "respond",
-    ] = Field(..., description="The type of action to perform")
-
-    target: str = Field(
-        default="",
-        description=(
-            "Target of the action — API name, database name, or file path. "
-            "Example: 'public_v2_api', 'public_meta.db', '/vault/secret.json'"
-        ),
-    )
-
-    payload: Optional[str] = Field(
-        default="",
-        description=(
-            "Optional payload — code to write, SQL query, or response text."
-        ),
+    action: str = Field(
+        default="", 
+        description="The command or JSON to perform."
     )
 
 
