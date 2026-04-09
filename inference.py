@@ -190,10 +190,7 @@ async def run_single_task(client: OpenAI, env: ZeroLeakEnv, task_id: str):
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     finally:
-        try:
-            env.close()
-        except Exception as e:
-            print(f"[DEBUG] env.close() error: {e}", flush=True)
+        # We don't close the env here; we close it once at the very end in main()
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
@@ -209,14 +206,16 @@ async def main() -> None:
     # Provide safe defaults in os.environ if they are missing locally.
     # We set them directly in os.environ so that the literal access below succeeds.
     os.environ.setdefault("API_BASE_URL", "https://router.huggingface.co/v1")
-    os.environ.setdefault("HF_TOKEN", "your_huggingface_token_here")
+    os.environ.setdefault("API_KEY", os.getenv("HF_TOKEN") or "your_token")
+    os.environ.setdefault("HF_TOKEN", os.getenv("API_KEY") or "your_token")
 
     # ── VALIDATOR PROXY COMPLIANCE ──
     # Logic: We MUST use strictly literal os.environ access here to satisfy 
     # the validator's AST-based security scan for LiteLLM proxy compliance.
+    # We use "API_KEY" as explicitly requested in the Phase 2 failure logs.
     client = OpenAI(
         base_url=os.environ["API_BASE_URL"], 
-        api_key=os.environ["HF_TOKEN"]
+        api_key=os.environ["API_KEY"]
     )
 
     # Resolve environment access (Docker vs Server)
