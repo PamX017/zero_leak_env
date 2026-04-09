@@ -10,7 +10,11 @@ from typing import Dict
 
 from openenv.core.client_types import StepResult
 from openenv.core.env_server.types import State
-from openenv.core import EnvClient
+# Dynamic base class selection to handle both sync and async environments
+try:
+    from openenv.core import AsyncEnvClient as BaseEnvClient
+except ImportError:
+    from openenv.core import EnvClient as BaseEnvClient
 
 try:
     from .models import ZeroLeakAction, ZeroLeakObservation
@@ -19,7 +23,7 @@ except (ImportError, ValueError):
 
 
 class ZeroLeakEnv(
-    EnvClient[ZeroLeakAction, ZeroLeakObservation, State]
+    BaseEnvClient[ZeroLeakAction, ZeroLeakObservation, State]
 ):
     """
     Client for the Zero-Leak Engineering Assistant.
