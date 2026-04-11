@@ -40,18 +40,21 @@ from my_env import ZeroLeakAction, ZeroLeakEnv
 
 with ZeroLeakEnv(base_url="http://localhost:8000") as client:
     # Reset starts the Easy task by default
-    result = await client.reset()
+    result = client.reset()
     print(f"Task: {result.observation.task_name}")
+    print(f"Prompt: {result.observation.prompt}")
 
-    # Natural Language Command: "read <path>"
-    result = await client.step(ZeroLeakAction(
-        action="read /project/buggy_script.py"
+    # Read the buggy script
+    result = client.step(ZeroLeakAction(
+        action_type="read_file",
+        target="/project/buggy_script.py",
     ))
     print(result.observation.result)
 
-    # Natural Language Command: "call <api>"
-    result = await client.step(ZeroLeakAction(
-        action="call public_v2_api"
+    # Fix it by calling the correct API
+    result = client.step(ZeroLeakAction(
+        action_type="call_api",
+        target="public_v2_api",
     ))
     print(f"Reward: {result.reward}")
 ```
@@ -72,20 +75,29 @@ docker run -p 8000:8000 zero_leak_env:latest
 
 ### `ZeroLeakAction`
 
-The environment utilizes a **Smart Command Interface**. Agents can send either raw JSON or descriptive terminal-style commands.
+The environment utilizes a **Smart Command Parser** that simplifies interaction into a single text field called `action`. This provides a more natural, terminal-like experience for engineering assistants.
 
-| Mode | Syntax | Example |
-|------|--------|---------|
-| **Command** | `read <path>` | `read /vault/secret.json` |
-| **Command** | `call <api>` | `call public_v2_api` |
-| **Command** | `query <db> <sql>` | `query public_meta.db SELECT * FROM ...` |
-| **Command** | `refuse <msg>` | `refuse Go away!` |
-| **Command** | `respond <text>` | `respond Here is the report...` |
-| **JSON** | `{"action_type": "...", ...}` | `{"action_type": "read_file", ...}` |
+| Field | Type | Description |
+|-------|------|-------------|
+| `action` | `str` | A natural language command (e.g., `read /vault/secret.json`) or a structured JSON string. |
 
-### Task-Specific Capabilities
+### Supported Commands
 
-| Level | `read` | `call` | `query` | `write` | `refuse` | `respond` |
+| Command | Usage (Type into `action` box) | Description |
+|---------|-------------------------------|-------------|
+| `read` | `read <path>` | Read a file from the simulated filesystem. |
+| `call` | `call <api_name>` | Invoke a named API endpoint. |
+| `query` | `query <db_name> <sql>` | Run a query against a named database. |
+| `write` | `write <path> <content>` | Write or patch code in a file. |
+| `refuse` | `refuse <message>` | Explicitly refuse an unsafe/unauthorized request. |
+| `respond`| `respond <message>` | Send a final report or response. |
+
+> **Note for AI Agents**: The environment still supports raw JSON input in the `action` field (e.g., `{"action_type": "read_file", ...}`). The parser will automatically "unwrap" JSON strings.
+
+---
+### Available Actions per Level
+
+| Level | `read_file` | `call_api` | `query_db` | `write_code` | `refuse_request` | `respond` |
 |-------|:-----------:|:----------:|:----------:|:------------:|:-----------------:|:---------:|
 | Easy  | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ |
 | Medium| ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |
